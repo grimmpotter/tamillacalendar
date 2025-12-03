@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tamilla's Birthday Countdown</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #fff1f2, #e0f2fe);
+      padding: 32px 16px 40px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Floating hearts + gifts background */
+    .float-bg {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .float-icon {
+      position: absolute;
+      font-size: 22px;
+      opacity: 0.55;
+      animation: floatUp 12s linear infinite;
+    }
+
+    .float-icon:nth-child(1) { left: 8%;  bottom: -12%; animation-duration: 13s; font-size: 26px; }
+    .float-icon:nth-child(2) { left: 22%; bottom: -10%; animation-duration: 11s; font-size: 20px; }
+    .float-icon:nth-child(3) { left: 36%; bottom: -18%; animation-duration: 15s; font-size: 24px; }
+    .float-icon:nth-child(4) { left: 52%; bottom: -14%; animation-duration: 12s; font-size: 22px; }
+    .float-icon:nth-child(5) { left: 68%; bottom: -16%; animation-duration: 14s; font-size: 26px; }
+    .float-icon:nth-child(6) { left: 82%; bottom: -12%; animation-duration: 10s; font-size: 22px; }
+    .float-icon:nth-child(7) { left: 15%; bottom: -20%; animation-duration: 16s; font-size: 24px; }
+    .float-icon:nth-child(8) { left: 45%; bottom: -22%; animation-duration: 18s; font-size: 28px; }
+    .float-icon:nth-child(9) { left: 75%; bottom: -19%; animation-duration: 17s; font-size: 24px; }
+    .float-icon:nth-child(10){ left: 90%; bottom: -21%; animation-duration: 19s; font-size: 20px; }
+
+    @keyframes floatUp {
+      0%   { transform: translateY(0); opacity: 0; }
+      15%  { opacity: 0.7; }
+      80%  { opacity: 0.8; }
+      100% { transform: translateY(-130vh); opacity: 0; }
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .calendar-wrapper {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.96);
+      border-radius: 28px;
+      box-shadow: 0 18px 45px rgba(148, 27, 89, 0.25);
+      padding: 26px 20px 28px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(244, 114, 182, 0.35);
+    }
+
+    .calendar-header {
+      text-align: center;
+      margin-bottom: 18px;
+      position: relative;
+    }
+
+    .calendar-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: rgba(248, 250, 252, 0.9);
+      font-size: 0.8rem;
+      color: #f973a9;
+      border: 1px solid rgba(244, 114, 182, 0.35);
+      margin-bottom: 8px;
+    }
+
+    .calendar-pill span.icon {
+      font-size: 1rem;
+    }
+
+    .calendar-title {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      color: #0f172a;
+      text-transform: uppercase;
+    }
+
+    .calendar-subtitle {
+      margin-top: 6px;
+      font-size: 0.95rem;
+      color: #6b7280;
+    }
+
+    /* Collage photo layer (behind the card, over the background) */
+    .collage-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .collage-photo {
+      position: absolute;
+      width: 130px;
+      height: 170px;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 18px 38px rgba(15, 23, 42, 0.4);
+      transform-origin: center;
+      background: #e5e7eb;
+    }
+
+    .collage-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transform: scale(1.05);
+      filter: brightness(0.95);
+    }
+
+    .collage-caption {
+      position: absolute;
+      bottom: 6px;
+      left: 8px;
+      right: 8px;
+      font-size: 0.68rem;
+      color: #f9fafb;
+      text-shadow: 0 2px 6px rgba(15, 23, 42, 0.85);
+    }
+
+    /* Different positions / rotations for collage */
+    .collage-photo:nth-child(1) { top: 7%;  left: 4%;  transform: rotate(-7deg); }
+    .collage-photo:nth-child(2) { top: 14%; right: 6%; transform: rotate(8deg);  }
+    .collage-photo:nth-child(3) { top: 46%; left: -10px; transform: rotate(5deg); }
+    .collage-photo:nth-child(4) { top: 55%; right: -6px; transform: rotate(-6deg); }
+    .collage-photo:nth-child(5) { bottom: 8%; left: 12%; transform: rotate(-3deg); }
+    .collage-photo:nth-child(6) { bottom: 10%; right: 10%; transform: rotate(4deg); }
+
+    @media (max-width: 768px) {
+      .collage-photo {
+        width: 105px;
+        height: 135px;
+      }
+    }
+
+    /* Inside wrapper: mini banner text only, collage is outside now */
+    .gallery-banner {
+      margin-top: 4px;
+      margin-bottom: 18px;
+      padding: 14px 16px 16px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(251, 113, 133, 0.95), rgba(168, 85, 247, 0.95));
+      color: #f9fafb;
+      box-shadow: 0 16px 30px rgba(88, 28, 135, 0.35);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .gallery-banner::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at top left, rgba(255, 255, 255, 0.22), transparent 55%),
+        linear-gradient(to bottom right, rgba(15, 23, 42, 0.12), transparent 55%);
+      pointer-events: none;
+    }
+
+    .gallery-pill-inner {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.18);
+      font-size: 0.8rem;
+      border: 1px solid rgba(248, 250, 252, 0.4);
+      margin-bottom: 6px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .gallery-pill-inner span.icon {
+      font-size: 1rem;
+    }
+
+    .gallery-main-title {
+      position: relative;
+      z-index: 1;
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .gallery-subtitle {
+      position: relative;
+      z-index: 1;
+      margin-top: 4px;
+      font-size: 0.9rem;
+      color: #fee2e2;
+    }
+
+    /* Calendar grid */
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .day-card {
+      position: relative;
+      aspect-ratio: 4 / 3;
+      border-radius: 22px;
+      background: radial-gradient(circle at top left, #f472b6, #ec4899, #7c3aed);
+      cursor: pointer;
+      overflow: hidden;
+      border: 1px solid rgba(244, 114, 182, 0.3);
+      transform: translateY(0);
+      transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease,
+        border-color 0.18s ease,
+        background 0.3s ease,
+        opacity 0.18s ease;
+    }
+
+    .day-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 14px 30px rgba(236, 72, 153, 0.55);
+      border-color: rgba(251, 113, 133, 0.8);
+    }
+
+    .day-card.locked {
+      background: linear-gradient(135deg, #e5e7eb, #cbd5f5);
+      cursor: not-allowed;
+      opacity: 0.7;
+      box-shadow: none;
+      border-color: rgba(148, 163, 184, 0.5);
+    }
+
+    .day-card.opened {
+      background: radial-gradient(circle at top, #22c55e, #4ade80);
+      border-color: rgba(22, 163, 74, 0.9);
+      box-shadow: 0 14px 38px rgba(22, 163, 74, 0.55);
+    }
+
+    .day-content {
+      position: absolute;
+      inset: 0;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      color: white;
+      text-align: center;
+    }
+
+    .day-number {
+      font-size: 1.7rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-shadow: 0 3px 10px rgba(15, 23, 42, 0.45);
+    }
+
+    .day-label {
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(248, 250, 252, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: rgba(15, 23, 42, 0.35);
+      backdrop-filter: blur(6px);
+    }
+
+    .day-status {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      opacity: 0.92;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.3);
+    }
+
+    .day-status span.dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #f9a8d4;
+    }
+
+    .day-card.opened .day-status span.dot {
+      background: #bbf7d0;
+    }
+
+    .day-card.locked .day-status span.dot {
+      background: #e5e7eb;
+    }
+
+    .sparkles {
+      position: absolute;
+      inset: -10%;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .day-card.opened .sparkles {
+      opacity: 1;
+    }
+
+    .sparkle {
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      border-radius: 999px;
+      background: rgba(248, 250, 252, 0.9);
+      animation: sparkle 2.6s linear infinite;
+    }
+
+    .sparkle:nth-child(2) { top: 20%; left: 70%; animation-delay: 0.4s; }
+    .sparkle:nth-child(3) { top: 65%; left: 30%; animation-delay: 0.9s; }
+    .sparkle:nth-child(4) { top: 50%; left: 85%; animation-delay: 1.5s; }
+    .sparkle:nth-child(5) { top: 10%; left: 20%; animation-delay: 2s; }
+
+    @keyframes sparkle {
+      0% { transform: scale(0.6) translateY(0); opacity: 0.2; }
+      40% { transform: scale(1.2) translateY(-6px); opacity: 1; }
+      100% { transform: scale(0.4) translateY(-12px); opacity: 0; }
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%) translateY(120%);
+      min-width: 260px;
+      max-width: 90vw;
+      background: rgba(15, 23, 42, 0.96);
+      color: #e5e7eb;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 18px 38px rgba(15, 23, 42, 0.7);
+      z-index: 40;
+      opacity: 0;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #fb7185;
+      flex-shrink: 0;
+    }
+
+    .calendar-meta {
+      margin-top: 12px;
+      font-size: 0.8rem;
+      text-align: center;
+      color: #6b7280;
+    }
+
+    /* Prize overlay */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.86);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 50;
+      overflow: hidden;
+    }
+
+    .overlay.visible {
+      display: flex;
+    }
+
+    .confetti {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .confetti-piece {
+      position: absolute;
+      width: 8px;
+      height: 14px;
+      border-radius: 2px;
+      background: #f973a9;
+      opacity: 0.9;
+      animation: confetti-fall 3s linear infinite;
+    }
+
+    .confetti-piece:nth-child(2) { left: 15%; animation-delay: 0.3s; background: #fde047; }
+    .confetti-piece:nth-child(3) { left: 30%; animation-delay: 0.6s; background: #4ade80; }
+    .confetti-piece:nth-child(4) { left: 45%; animation-delay: 0.9s; background: #38bdf8; }
+    .confetti-piece:nth-child(5) { left: 60%; animation-delay: 1.2s; background: #f973a9; }
+    .confetti-piece:nth-child(6) { left: 75%; animation-delay: 1.5s; background: #fde047; }
+    .confetti-piece:nth-child(7) { left: 90%; animation-delay: 1.8s; background: #4ade80; }
+
+    @keyframes confetti-fall {
+      0% { top: -15%; transform: rotate(0deg); }
+      50% { transform: rotate(45deg); }
+      100% { top: 115%; transform: rotate(90deg); }
+    }
+
+    .prize-card {
+      background: radial-gradient(circle at top, #111827, #020617);
+      color: #e5e7eb;
+      border-radius: 26px;
+      padding: 22px 20px 20px;
+      width: min(420px, 100%);
+      box-shadow: 0 20px 60px rgba(15, 23, 42, 0.9);
+      transform: scale(0.9) translateY(30px);
+      opacity: 0;
+      animation: prize-pop 0.35s ease forwards;
+      position: relative;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    @keyframes prize-pop {
+      0% { transform: scale(0.9) translateY(40px); opacity: 0; }
+      60% { transform: scale(1.04) translateY(0); opacity: 1; }
+      100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    .prize-ribbon {
+      position: absolute;
+      top: -40px;
+      right: -80px;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle at center, rgba(244, 114, 182, 0.7), transparent 60%);
+      opacity: 0.4;
+    }
+
+    .prize-day-tag {
+      font-size: 0.8rem;
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+      background: rgba(15, 23, 42, 0.7);
+    }
+
+    .prize-day-tag span.icon {
+      font-size: 0.95rem;
+    }
+
+    .prize-header {
+      font-size: 0.78rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #f9a8d4;
+      margin-bottom: 6px;
+    }
+
+    .prize-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .prize-text {
+      font-size: 0.96rem;
+      color: #e5e7eb;
+      margin-bottom: 16px;
+      line-height: 1.4;
+    }
+
+    .prize-visual {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+
+    #prize-emoji {
+      font-size: 4rem;
+      filter: drop-shadow(0 6px 18px rgba(0,0,0,0.55));
+      animation: emoji-pop 0.6s ease;
+    }
+
+    @keyframes emoji-pop {
+      0% { transform: scale(0.4) translateY(20px); opacity: 0; }
+      60% { transform: scale(1.15) translateY(0); opacity: 1; }
+      100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    .prize-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+
+    .prize-close-btn {
+      border: none;
+      outline: none;
+      padding: 7px 16px;
+      border-radius: 999px;
+      background: rgba(248, 250, 252, 0.08);
+      color: #e5e7eb;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: background 0.18s ease, transform 0.18s ease;
+    }
+
+    .prize-close-btn:hover {
+      background: rgba(248, 250, 252, 0.15);
+      transform: translateY(-1px);
+    }
+
+    @media (max-width: 640px) {
+      .calendar-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .calendar-title {
+        font-size: 1.6rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Floating hearts + gifts -->
+  <div class="float-bg">
+    <div class="float-icon">❤️</div>
+    <div class="float-icon">🎁</div>
+    <div class="float-icon">💗</div>
+    <div class="float-icon">🎁</div>
+    <div class="float-icon">💕</div>
+    <div class="float-icon">🎁</div>
+    <div class="float-icon">💖</div>
+    <div class="float-icon">🎁</div>
+    <div class="float-icon">💞</div>
+    <div class="float-icon">🎁</div>
+  </div>
+
+  <!-- Collage photos over the whole screen (change image paths) -->
+  <div class="collage-layer">
+    <div class="collage-photo">
+      <img src="tamilla1.jpg" alt="Tamilla 1" />
+      <div class="collage-caption"></div>
+    </div>
+    <div class="collage-photo">
+      <img src="tamilla2.jpg" alt="Tamilla 2" />
+      <div class="collage-caption"></div>
+    </div>
+    <div class="collage-photo">
+      <img src="tamilla3.jpg" alt="Tamilla 3" />
+      <div class="collage-caption"></div>
+    </div>
+    <div class="collage-photo">
+      <img src="tamilla4.jpg" alt="You and Tamilla" />
+      <div class="collage-caption"></div>
+    </div>
+    <div class="collage-photo">
+      <img src="tamilla5.jpg" alt="Tamilla 4" />
+      <div class="collage-caption"></div>
+    </div>
+    <div class="collage-photo">
+      <img src="tamilla6.jpg" alt="You and Tamilla 2" />
+      <div class="collage-caption"></div>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="calendar-wrapper">
+      <div class="calendar-header">
+        <div class="calendar-pill">
+          <span class="icon">🎂</span>
+          <span>Birthday countdown for Tamilla</span>
+        </div>
+        <div class="calendar-title">TAMILLA'S BIRTHDAY COUNTDOWN</div>
+        <div class="calendar-subtitle" id="date-range-label"></div>
+      </div>
+
+      <div class="gallery-banner">
+        <div class="gallery-pill-inner">
+          <span class="icon">📸</span>
+          <span>Little moments of Tamilla</span>
+        </div>
+        <div class="gallery-main-title">YOUR BIRTHDAY SEASON</div>
+        <div class="gallery-subtitle">
+          10 days, 10 small gifts, and a countdown that is just about you.
+        </div>
+      </div>
+
+      <div class="calendar-grid" id="calendar-grid"></div>
+      <div class="calendar-meta" id="calendar-meta"></div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">
+    <div class="toast-dot"></div>
+    <div id="toast-text"></div>
+  </div>
+
+  <!-- Prize overlay -->
+  <div class="overlay" id="overlay">
+    <div class="confetti">
+      <div class="confetti-piece"></div>
+      <div class="confetti-piece"></div>
+      <div class="confetti-piece"></div>
+      <div class="confetti-piece"></div>
+      <div class="confetti-piece"></div>
+      <div class="confetti-piece"></div>
+      <div class="confetti-piece"></div>
+    </div>
+    <div class="prize-card">
+      <div class="prize-ribbon"></div>
+      <div class="prize-day-tag">
+        <span class="icon">🎁</span>
+        <span id="prize-day-label"></span>
+      </div>
+      <div class="prize-header">You unlocked today's surprise</div>
+      <div class="prize-visual">
+        <div id="prize-emoji">🎁</div>
+      </div>
+      <div class="prize-title" id="prize-title"></div>
+      <div class="prize-text" id="prize-text"></div>
+      <div class="prize-footer">
+        <span id="prize-footer-date"></span>
+        <button class="prize-close-btn" id="prize-close-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Date config: Dec 1, Dec 2, Dec 18–31, Jan 1 (next year)
+    const now = new Date();
+    const baseYear = now.getFullYear();
+
+    const PRIZES = [
+      //"Happy Birthday, my love 🤍 I hope this little calendar made you smile in small ways before today, because you deserve to be celebrated more than one day a year. You came into my life quietly and somehow changed the way I look at everything. You make moments feel warmer, days feel lighter, and distance feel temporary even when it is not. This is just a small gift, but it comes with a big intention: Use it on something that makes you happy. Something for you. Something that makes you feel good, spoiled, and appreciated. Because you are. I am really grateful you exist, and even more grateful that I get to be close to you in your world, in your heart, and in your life. Happy Birthday, Tamilla. I am very lucky to love you.Always yours ❤️ 150CAD in Cash",
+      "A drink of your choice? Use it before it's too late",
+      "NOTHING, don't be too greedy, see you tomorrow :p",
+      "-0.5CAD from your debt, 1199.5CAD left",
+      "-10CAD from your debt, 1989.5CAD Left",
+      "-39.5CAD from your debt, 1950CAD Left",
+      "Nothing for today, :p come back tomorrow.",
+      "A dessert of your choosing?",
+      "Pizza delivery of your choice?",
+      "-50CAD From your debt, 1100CAD left :p",
+      "Happy Birthday, my love 🤍 I hope this little calendar made you smile in small ways before today, because you deserve to be celebrated more than one day a year. You came into my life quietly and somehow changed the way I look at everything. You make moments feel warmer, days feel lighter, and distance feel temporary even when it is not. This is just a small gift, but it comes with a big intention: Use it on something that makes you happy. Something for you. Something that makes you feel good, spoiled, and appreciated. Because you are. I am really grateful you exist, and even more grateful that I get to be close to you in your world, in your heart, and in your life. Happy Birthday, Tamilla. I am very lucky to love you.Always yours ❤️ 150CAD in Cash"
+    ];
+
+    function toYMD(date) {
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    }
+
+    const today = toYMD(new Date());
+
+    const dayDates = [
+      //new Date(baseYear, 11, 1),  // Dec 1
+      //new Date(baseYear, 11, 2),  // Dec 2
+      ...Array.from({ length: 9 }, (_, i) => new Date(baseYear, 11, 23 + i)), // Dec 24–31
+      new Date(baseYear + 1, 0, 1) // Jan 1
+    ];
+
+    const days = dayDates.map((date, index) => ({
+      index,
+      date,
+      prize: PRIZES[index] || "Secret surprise from me to you."
+    }));
+
+    const STORAGE_KEY = "tamilla_birthday_calendar_opened_17";
+
+    function getOpenedDays() {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (!stored) return [];
+        const parsed = JSON.parse(stored);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function setOpenedDays(arr) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+    }
+
+    function formatDateShort(date) {
+      return date.toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric"
+      });
+    }
+
+    function sameDay(a, b) {
+      return (
+        a.getFullYear() === b.getFullYear() &&
+        a.getMonth() === b.getMonth() &&
+        a.getDate() === b.getDate()
+      );
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      const text = document.getElementById("toast-text");
+      text.textContent = message;
+      toast.classList.add("show");
+
+      clearTimeout(showToast._timeout);
+      showToast._timeout = setTimeout(() => {
+        toast.classList.remove("show");
+      }, 2500);
+    }
+
+    function getEmojiForPrize(prizeText) {
+      const lower = prizeText.toLowerCase();
+      if (lower.includes("pizza") || lower.includes("dessert")) return "🍕";
+      if (lower.includes("playlist") || lower.includes("song")) return "🎧";
+      if (lower.includes("Debt") || lower.includes("cad")) return "💸";
+      if (lower.includes("drink") || lower.includes("drink")) return "🧋";
+      if (lower.includes("letter")) return "💌";
+      if (lower.includes("date")) return "🥂";
+      return "🎁";
+    }
+
+    function openPrize(dayObj) {
+      const overlay = document.getElementById("overlay");
+      const dayLabel = document.getElementById("prize-day-label");
+      const title = document.getElementById("prize-title");
+      const text = document.getElementById("prize-text");
+      const footer = document.getElementById("prize-footer-date");
+      const emojiEl = document.getElementById("prize-emoji");
+
+      dayLabel.textContent = "Day " + (dayObj.index + 1);
+      title.textContent = "For you, Tamilla";
+      text.textContent = dayObj.prize;
+      footer.textContent = formatDateShort(dayObj.date);
+      emojiEl.textContent = getEmojiForPrize(dayObj.prize);
+
+      emojiEl.style.animation = "none";
+      void emojiEl.offsetWidth;
+      emojiEl.style.animation = "emoji-pop 0.6s ease";
+
+      overlay.classList.add("visible");
+    }
+
+    function initCalendar() {
+      const grid = document.getElementById("calendar-grid");
+      const dateLabel = document.getElementById("date-range-label");
+      const meta = document.getElementById("calendar-meta");
+
+      const openedDays = getOpenedDays();
+      const first = days[0].date;
+      const last = days[days.length - 1].date;
+
+      dateLabel.textContent =
+        "From " + formatDateShort(first) + " until " + formatDateShort(last) + ".";
+
+      meta.textContent =
+        "You can open any box up to today. Future days stay locked.";
+
+      grid.innerHTML = "";
+
+      days.forEach(dayObj => {
+        const isOpened = openedDays.includes(dayObj.index);
+        const isToday = sameDay(dayObj.date, today);
+        const isFuture = dayObj.date > today;
+
+        const card = document.createElement("div");
+        card.classList.add("day-card");
+
+        if (isOpened) {
+          card.classList.add("opened");
+        } else if (isFuture) {
+          card.classList.add("locked");
+        }
+
+        const content = document.createElement("div");
+        content.classList.add("day-content");
+
+        const number = document.createElement("div");
+        number.classList.add("day-number");
+        number.textContent = dayObj.index + 1;
+
+        const label = document.createElement("div");
+        label.classList.add("day-label");
+        label.textContent = formatDateShort(dayObj.date);
+
+        const status = document.createElement("div");
+        status.classList.add("day-status");
+        const dot = document.createElement("span");
+        dot.classList.add("dot");
+        status.appendChild(dot);
+
+        const statusText = document.createElement("span");
+
+        if (isOpened) {
+          statusText.textContent = "Opened";
+        } else if (isToday) {
+          statusText.textContent = "Today";
+        } else if (isFuture) {
+          statusText.textContent = "Locked";
+        } else {
+          statusText.textContent = "Available";
+        }
+
+        status.appendChild(statusText);
+
+        content.appendChild(number);
+        content.appendChild(label);
+        content.appendChild(status);
+
+        const sparkles = document.createElement("div");
+        sparkles.classList.add("sparkles");
+        for (let i = 0; i < 5; i++) {
+          const dotSparkle = document.createElement("div");
+          dotSparkle.classList.add("sparkle");
+          sparkles.appendChild(dotSparkle);
+        }
+
+        card.appendChild(content);
+        card.appendChild(sparkles);
+
+        card.addEventListener("click", () => {
+          const updatedOpened = getOpenedDays();
+          const alreadyOpened = updatedOpened.includes(dayObj.index);
+
+          if (dayObj.date <= today) {
+            if (!alreadyOpened) {
+              updatedOpened.push(dayObj.index);
+              setOpenedDays(updatedOpened);
+            }
+            openPrize(dayObj);
+            card.classList.add("opened");
+            card.classList.remove("locked");
+            card.querySelector(".day-status span:nth-child(2)").textContent = "Opened";
+            return;
+          }
+
+          if (isFuture) {
+            showToast("Too early. This surprise unlocks on " + formatDateShort(dayObj.date) + ".");
+          }
+        });
+
+        grid.appendChild(card);
+      });
+    }
+
+    function initOverlay() {
+      const overlay = document.getElementById("overlay");
+      const closeBtn = document.getElementById("prize-close-btn");
+
+      function closeOverlay() {
+        overlay.classList.remove("visible");
+      }
+
+      closeBtn.addEventListener("click", closeOverlay);
+      overlay.addEventListener("click", event => {
+        if (event.target === overlay) {
+          closeOverlay();
+        }
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      initCalendar();
+      initOverlay();
+    });
+  </script>
+</body>
+</html>
+
